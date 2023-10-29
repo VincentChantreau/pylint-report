@@ -199,7 +199,7 @@ def get_parser():
             "(by default CSS styles are stored in the HTML)"
         ),
     )
-    
+    # custom template file location
     parser.add_argument(
         "-t",
         "--custom-template",
