@@ -38,16 +38,16 @@ def get_score(stats):
     return max(0, 0 if f else 10 * (1 - ((5 * e + w + r + c) / s)))
 
 
-def get_template():
+def get_template(template_file):
     """Return jinja2 template."""
     return jinja2.Environment(
         loader=jinja2.FileSystemLoader(CURRENT_DIR),
         keep_trailing_newline=True,
         undefined=jinja2.StrictUndefined,
-    ).get_template(TEMPLATE_FILE)
+    ).get_template(template_file)
 
 
-def json2html(data, external_css):
+def json2html(data, external_css, custom_template):
     """Generate an html file based on JSON data."""
 
     if not external_css:
@@ -55,6 +55,11 @@ def json2html(data, external_css):
             css = h.read()
     else:
         css = None
+
+    if not custom_template:
+        template = TEMPLATE_FILE
+    else:
+        template = custom_template
 
     if data["messages"]:
         msg = {
@@ -77,7 +82,7 @@ def json2html(data, external_css):
         modules=data["stats"]["by_module"],
         msg=msg,
     )
-    return get_template().render(context)
+    return get_template(template).render(context)
 
 
 class _SetEncoder(json.JSONEncoder):
@@ -182,7 +187,7 @@ def get_parser():
         dest="html_file",
         type=argparse.FileType("w"),
         default=sys.stdout,
-        help="ame of html file to generate (send to stdout by default)",
+        help="name of html file to generate (send to stdout by default)",
     )
 
     parser.add_argument(
@@ -194,7 +199,15 @@ def get_parser():
             "(by default CSS styles are stored in the HTML)"
         ),
     )
-
+    
+    parser.add_argument(
+        "-t",
+        "--custom-template",
+        help=(
+            "use external ``pylint-report.css`` file "
+            "(by default CSS styles are stored in the HTML)"
+        ),
+    )
     return parser
 
 
@@ -205,7 +218,7 @@ def main(argv=None):
     with args.json_file as h:
         json_data = json.load(h)
 
-    print(json2html(json_data, args.external_css), file=args.html_file)
+    print(json2html(json_data, args.external_css, args.custom_template), file=args.html_file)
 
 
 def sphinx_argparse_func():  # pragma: no cover
