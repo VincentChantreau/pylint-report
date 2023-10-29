@@ -5,3 +5,4 @@ __pycache__
 .autosummary
 _version.py
 *.egg-info
+.env
